@@ -1,0 +1,179 @@
+﻿using System;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
+using NUnit.Framework;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Firefox;
+using OpenQA.Selenium.Support.UI;
+using OpenQA.Selenium.Chrome;
+
+namespace SeleniumTests
+{
+    [TestFixture]
+    public class AddingToCart
+    {
+        private IWebDriver driver;
+        private StringBuilder verificationErrors;
+        private string baseURL;
+        private bool acceptNextAlert = true;
+
+        [SetUp]
+        public void SetupTest()
+        {
+            //driver = new FirefoxDriver();
+            driver = new ChromeDriver();
+            baseURL = "https://www.google.com/";
+            verificationErrors = new StringBuilder();
+        }
+
+        [TearDown]
+        public void TeardownTest()
+        {
+            try
+            {
+                driver.Quit();
+            }
+            catch (Exception)
+            {
+                // Ignore errors if unable to close the browser
+            }
+            Assert.AreEqual("", verificationErrors.ToString());
+        }
+
+        [Test]
+        public void TheAddingToCartTest()
+        {
+            driver.Navigate().GoToUrl("https://demo.opencart.com/index.php?route=product/category&path=25_28");
+            /*driver.FindElement(By.Name("q")).Click();
+            driver.FindElement(By.Name("q")).Clear();
+            driver.FindElement(By.Name("q")).SendKeys("demo.opencart");
+            driver.FindElement(By.Id("tsf")).Submit();*/
+            //driver.FindElement(By.XPath("//div[@id='rso']/div/div/div/div/div/a/h3/span")).Click();
+            //Thread.Sleep(1500);
+            //driver.FindElement(By.LinkText("Monitors (2)")).Click();
+            driver.FindElement(By.XPath("//img[@alt='Samsung SyncMaster 941BW']")).Click();
+            driver.FindElement(By.Id("button-cart")).Click();
+            driver.Navigate().GoToUrl("https://demo.opencart.com/index.php?route=product/category&path=18");
+            driver.FindElement(By.XPath("//img[@alt='HP LP3065']")).Click();
+            driver.FindElement(By.Id("button-cart")).Click();
+        }
+        [Test]
+        public void TheRemovingFromCartTest()
+        {
+            driver.Navigate().GoToUrl("https://demo.opencart.com/");
+            /*driver.FindElement(By.Name("q")).Click();
+            driver.FindElement(By.Name("q")).Clear();
+            driver.FindElement(By.Name("q")).SendKeys("demo.opencart");
+            driver.FindElement(By.Id("tsf")).Submit();
+            driver.FindElement(By.XPath("//div[@id='rso']/div/div/div/div/div/a/h3")).Click();*/
+            driver.FindElement(By.XPath("//div[@id='top-links']/ul/li[4]/a/i")).Click();
+            driver.FindElement(By.XPath("(//button[@type='button'])[10]")).Click();
+        }
+        [Test]
+        public void TheCheckoutTest()
+        {
+            driver.Navigate().GoToUrl("https://demo.opencart.com/");
+            /*driver.FindElement(By.Name("q")).Click();
+            driver.FindElement(By.Name("q")).Clear();
+            driver.FindElement(By.Name("q")).SendKeys("demo.opencart");
+            driver.FindElement(By.Id("tsf")).Submit();
+            driver.FindElement(By.XPath("//div[@id='rso']/div/div/div/div/div/a/h3/span")).Click();*/
+            driver.FindElement(By.XPath("//div[@id='top-links']/ul/li[5]/a/i")).Click();
+            Thread.Sleep(1000);
+            driver.FindElement(By.XPath("//div[@id='collapse-checkout-option']/div/div/div/div[2]/label")).Click();
+            driver.FindElement(By.Id("button-account")).Click();
+            driver.FindElement(By.Id("input-payment-firstname")).Click();
+            for (int second = 0; ; second++)
+            {
+                if (second >= 60) Assert.Fail("timeout");
+                try
+                {
+                    if (IsElementPresent(By.Id("input-payment-firstname"))) break;
+                }
+                catch (Exception)
+                { }
+                Thread.Sleep(1000);
+            }
+            driver.FindElement(By.Id("input-payment-firstname")).Clear();
+            driver.FindElement(By.Id("input-payment-firstname")).SendKeys("Filip");
+            driver.FindElement(By.Id("input-payment-lastname")).Click();
+            driver.FindElement(By.Id("input-payment-lastname")).Clear();
+            driver.FindElement(By.Id("input-payment-lastname")).SendKeys("Forjan");
+            driver.FindElement(By.Id("input-payment-email")).Click();
+            driver.FindElement(By.Id("input-payment-email")).Clear();
+            driver.FindElement(By.Id("input-payment-email")).SendKeys("f.f@g.com");
+            driver.FindElement(By.Id("input-payment-telephone")).Click();
+            driver.FindElement(By.Id("input-payment-telephone")).Clear();
+            driver.FindElement(By.Id("input-payment-telephone")).SendKeys("12345");
+            driver.FindElement(By.XPath("//div[@id='collapse-payment-address']/div/div/div[2]")).Click();
+            driver.FindElement(By.Id("input-payment-address-1")).Clear();
+            driver.FindElement(By.Id("input-payment-address-1")).SendKeys("aaaaa");
+            driver.FindElement(By.Id("input-payment-city")).Click();
+            driver.FindElement(By.Id("input-payment-city")).Click();
+            driver.FindElement(By.Id("input-payment-city")).Clear();
+            driver.FindElement(By.Id("input-payment-city")).SendKeys("bbbbb");
+            driver.FindElement(By.XPath("//div[@id='collapse-payment-address']/div/div")).Click();
+            driver.FindElement(By.Id("input-payment-postcode")).Clear();
+            driver.FindElement(By.Id("input-payment-postcode")).SendKeys("dada");
+            driver.FindElement(By.Id("input-payment-country")).Click();
+            new SelectElement(driver.FindElement(By.Id("input-payment-country"))).SelectByText("Suriname");
+            driver.FindElement(By.Id("input-payment-zone")).Click();
+            new SelectElement(driver.FindElement(By.Id("input-payment-zone"))).SelectByText("Commewijne");
+            driver.FindElement(By.Id("input-payment-zone")).Click();
+            driver.FindElement(By.Id("button-guest")).Click();
+            driver.FindElement(By.Id("button-shipping-method")).Click();
+            driver.FindElement(By.Name("agree")).Click();
+            driver.FindElement(By.Id("button-payment-method")).Click();
+            driver.FindElement(By.Id("button-confirm")).Click();
+            driver.FindElement(By.LinkText("Continue")).Click();
+        }
+        private bool IsElementPresent(By by)
+        {
+            try
+            {
+                driver.FindElement(by);
+                return true;
+            }
+            catch (NoSuchElementException)
+            {
+                return false;
+            }
+        }
+
+        private bool IsAlertPresent()
+        {
+            try
+            {
+                driver.SwitchTo().Alert();
+                return true;
+            }
+            catch (NoAlertPresentException)
+            {
+                return false;
+            }
+        }
+
+        private string CloseAlertAndGetItsText()
+        {
+            try
+            {
+                IAlert alert = driver.SwitchTo().Alert();
+                string alertText = alert.Text;
+                if (acceptNextAlert)
+                {
+                    alert.Accept();
+                }
+                else
+                {
+                    alert.Dismiss();
+                }
+                return alertText;
+            }
+            finally
+            {
+                acceptNextAlert = true;
+            }
+        }
+    }
+}
